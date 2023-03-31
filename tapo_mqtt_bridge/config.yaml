@@ -1,0 +1,24 @@
+name: Tapo MQTT Bridge
+description: Home Assistant Addon to bridge a tp-link tapo c200 security camera to MQTT
+version: 1.0.0
+slug: tapo_mqtt_bridge
+init: false
+arch:
+  - aarch64
+  - amd64
+  - armhf
+  - armv7
+  - i386
+
+options:
+  mqtt_client_id: tapo-cam
+
+schema:
+  ip: str
+  username: str
+  password: str
+  mqtt_client_id: str
+
+hassio_api: true
+services: 
+  - mqtt:need
