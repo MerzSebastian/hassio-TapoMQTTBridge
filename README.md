@@ -21,6 +21,7 @@ Here's an overview of the available options:
 
 Add the following to your configuration.yaml (replace <username>, <password> and <ip>)
 ```yaml
+mqtt:
   button:
     - unique_id: tapo-cam_up
       name: "Tapo Cam - UP"
