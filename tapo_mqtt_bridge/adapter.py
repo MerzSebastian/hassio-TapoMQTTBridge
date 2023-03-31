@@ -69,17 +69,17 @@ def privacy_set(status):
     )
 
 
-def move(direction):
+def move(direction, steps):
     global headers
     global url
     global currentToken
-    return requests.post(
+    requests.post(
         url + "/stok=" + currentToken + "/ds",
         json={
             "method": "do", "motor": {
                 "move": {
-                    "x_coord": "-10" if direction == "left" else "10" if direction == "right" else "0",
-                    "y_coord": "-10" if direction == "down" else "10" if direction == "up" else "0"
+                    "x_coord": "-" + steps if direction == "left" else steps if direction == "right" else "0",
+                    "y_coord": "-" + steps if direction == "down" else steps if direction == "up" else "0"
                 }
             }
         },
@@ -90,13 +90,11 @@ def move(direction):
 
 def on_message(client, userdata, message):
     payload = str(message.payload.decode("utf-8")).lower()
-    print(message.topic)
     if message.topic == hass_options["mqtt_client_id"] + "/privacy/set" and (payload == "on" or payload == "off"):
         if privacy_set(payload).json()["error_code"] == 0:
-            client.publish(
-                hass_options["mqtt_client_id"] + "/privacy", payload.upper())
+            client.publish(hass_options["mqtt_client_id"] + "/privacy", payload.upper())
     if message.topic == hass_options["mqtt_client_id"] + "/move/right" or message.topic == hass_options["mqtt_client_id"] + "/move/left" or message.topic == hass_options["mqtt_client_id"] + "/move/up" or message.topic == hass_options["mqtt_client_id"] + "/move/down":
-        print(move(message.topic.split("/")[2]).json())
+        move(message.topic.split("/")[2], payload)
 
 
 def on_connect(client, userdata, flags, rc):
