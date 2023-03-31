@@ -119,6 +119,7 @@ cards:
 ```
 # Usage
 If you followed the setup steps correctly you now should have a lovelance element which can controll your tapo-c200 cam
+
 ![](https://github.com/MerzSebastian/hassio-TapoMQTTBridge/blob/main/sample.PNG)
 
 # Credits
