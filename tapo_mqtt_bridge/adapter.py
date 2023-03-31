@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 import time
 import paho.mqtt.client as mqtt
 import json
+import os
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 hass_options = json.load(open('/data/options.json'))
