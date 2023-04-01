@@ -26,3 +26,6 @@ schema:
 hassio_api: true
 services: 
   - mqtt:need
+
+map:
+  - config:rw
