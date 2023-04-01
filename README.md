@@ -42,9 +42,12 @@ mqtt:
   switch:
     - unique_id: tapo-cam_privacy_switch
       name: "Tapo Cam - Privacy Switch"
+      state_topic: "tapo-cam/privacy"
       command_topic: "tapo-cam/privacy/set"
       payload_on: "ON"
       payload_off: "OFF"
+      state_on: "ON"
+      state_off: "OFF"
 camera:
   - platform: ffmpeg
     name: Tapo-C200
