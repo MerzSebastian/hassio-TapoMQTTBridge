@@ -81,8 +81,11 @@ update_yaml_file('/config/configuration.yaml', {
         "input": f'-rtsp_transport tcp -i rtsp://{hass_options["username"]}:{hass_options["password"]}@{hass_options["ip"]}:554/stream1'
     }]
 })
-
-
+# Restart hass core (a bit shitty but works for now)
+res = requests.get("http://supervisor/services/mqtt", headers={
+    "Authorization": "Bearer " + os.environ.get('SUPERVISOR_TOKEN')
+})
+log("RESTART CORE " + res.text)
 
 
 
