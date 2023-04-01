@@ -131,6 +131,5 @@ while True:
             refresh_token()
             timer = datetime.now()
         except Exception as e:
-            log("Polling token failed!")
-            log(e.message)
+            log("ERROR | Seems like the tapo-cam ist not reachable!", e)
     time.sleep(1)
