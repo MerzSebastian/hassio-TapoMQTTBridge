@@ -133,5 +133,5 @@ while True:
             refresh_token()
             timer = datetime.now()
         except Exception as e:
-            log("ERROR | Seems like the tapo-cam ist not reachable!", e)
+            log("ERROR | Seems like the tapo-cam ist not reachable! " +  str(e))
     time.sleep(1)
