@@ -6,14 +6,103 @@ import paho.mqtt.client as mqtt
 import json
 import os
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
-import yaml
+import sys
+from ruamel.yaml import YAML
+from ruamel.yaml.compat import StringIO
+
+
+
+
+
+
+
+
+# Auto create tapo entities in configuration.yaml - currently only buttons and switches
+yaml_data = open('/config/configuration.yaml', 'r')
+yaml = YAML()
+data = yaml.load(yaml_data)
+
+new_entities = {
+    "button": [
+        { "unique_id": "tapo-cam_up", "name": "Tapo Cam - Move up", "command_topic": "tapo-cam/move/up", "payload_press": "10" },
+        { "unique_id": "tapo-cam_down", "name": "Tapo Cam - Move down", "command_topic": "tapo-cam/move/down", "payload_press": "10" },
+        { "unique_id": "tapo-cam_left", "name": "Tapo Cam - Move left", "command_topic": "tapo-cam/move/left", "payload_press": "10" },
+        { "unique_id": "tapo-cam_right", "name": "Tapo Cam - Move right", "command_topic": "tapo-cam/move/right", "payload_press": "10" },
+    ],
+    "switch": [
+        { "unique_id": "tapo-cam_privacy_switch", "name": "Tapo Cam - Privacy Switch", "state_topic": "tapo-cam/privacy", "command_topic": "tapo-cam/privacy/set", "payload_on": "ON", "payload_off": "OFF", "state_on": "ON", "state_off": "OFF" },
+    ]
+}
+
+for entity_type, new_entities_list in new_entities.items():
+    for entity in new_entities_list:
+        entity_exists = False
+        if "mqtt" not in data:
+            data["mqtt"] = {}
+        if not data["mqtt"]:
+            data["mqtt"] = {}
+        if entity_type not in data["mqtt"]:
+            data["mqtt"][entity_type] = []
+        for existing_entity in data["mqtt"][entity_type]:
+            if existing_entity["unique_id"] == entity["unique_id"]:
+                entity_exists = True
+                data["mqtt"][entity_type][data["mqtt"][entity_type].index(existing_entity)] = entity
+                break
+        if not entity_exists:
+            data["mqtt"][entity_type].append(entity)
+
+with open('/config/configuration.yaml', 'w') as fp:
+    yaml.dump(data, fp)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 currentToken = ""
 hass_options = json.load(open('/data/options.json'))
 getCensoredToken = lambda token: (len(token) - 4) * "*" + token[len(token)-4:]
 log = lambda value: os.system(f'echo \'{datetime.now().strftime("%m/%d/%Y, %H:%M:%S")} | {str(value).replace(currentToken, getCensoredToken(currentToken))}\'') if hass_options["logging"] else lambda:None 
 
-log(yaml.safe_load(open('/config/configuration.yaml')))
+#log(yaml.safe_load(open('/config/configuration.yaml')))
 
 mqtt_response = requests.get("http://supervisor/services/mqtt", headers={
     "Authorization": "Bearer " + os.environ.get('SUPERVISOR_TOKEN')
