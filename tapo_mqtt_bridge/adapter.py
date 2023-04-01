@@ -47,6 +47,8 @@ def refresh_token():
     res = requests.post(url, json=data, headers=headers, verify=False)
     if res.status_code == 200:
         currentToken = res.json()["result"]["stok"]
+
+    
     log(f'HTTP Response => status code: { str(res.status_code) }, response text: { res.text }' )
     
 
