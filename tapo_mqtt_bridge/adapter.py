@@ -7,100 +7,91 @@ import json
 import os
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 import sys
-from ruamel.yaml import YAML
+from ruamel.yaml import YAML, representer
 from ruamel.yaml.compat import StringIO
-
-
-
-
-
-
-
-
-# Auto create tapo entities in configuration.yaml - currently only buttons and switches
-yaml_data = open('/config/configuration.yaml', 'r')
-yaml = YAML()
-data = yaml.load(yaml_data)
-
-new_entities = {
-    "button": [
-        { "unique_id": "tapo-cam_up", "name": "Tapo Cam - Move up", "command_topic": "tapo-cam/move/up", "payload_press": "10" },
-        { "unique_id": "tapo-cam_down", "name": "Tapo Cam - Move down", "command_topic": "tapo-cam/move/down", "payload_press": "10" },
-        { "unique_id": "tapo-cam_left", "name": "Tapo Cam - Move left", "command_topic": "tapo-cam/move/left", "payload_press": "10" },
-        { "unique_id": "tapo-cam_right", "name": "Tapo Cam - Move right", "command_topic": "tapo-cam/move/right", "payload_press": "10" },
-    ],
-    "switch": [
-        { "unique_id": "tapo-cam_privacy_switch", "name": "Tapo Cam - Privacy Switch", "state_topic": "tapo-cam/privacy", "command_topic": "tapo-cam/privacy/set", "payload_on": "ON", "payload_off": "OFF", "state_on": "ON", "state_off": "OFF" },
-    ]
-}
-
-for entity_type, new_entities_list in new_entities.items():
-    for entity in new_entities_list:
-        entity_exists = False
-        if "mqtt" not in data:
-            data["mqtt"] = {}
-        if not data["mqtt"]:
-            data["mqtt"] = {}
-        if entity_type not in data["mqtt"]:
-            data["mqtt"][entity_type] = []
-        for existing_entity in data["mqtt"][entity_type]:
-            if existing_entity["unique_id"] == entity["unique_id"]:
-                entity_exists = True
-                data["mqtt"][entity_type][data["mqtt"][entity_type].index(existing_entity)] = entity
-                break
-        if not entity_exists:
-            data["mqtt"][entity_type].append(entity)
-
-with open('/config/configuration.yaml', 'w') as fp:
-    yaml.dump(data, fp)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+representer.RoundTripRepresenter.ignore_aliases = lambda x, y: True
 
 currentToken = ""
 hass_options = json.load(open('/data/options.json'))
 getCensoredToken = lambda token: (len(token) - 4) * "*" + token[len(token)-4:]
 log = lambda value: os.system(f'echo \'{datetime.now().strftime("%m/%d/%Y, %H:%M:%S")} | {str(value).replace(currentToken, getCensoredToken(currentToken))}\'') if hass_options["logging"] else lambda:None 
+
+
+
+
+
+
+
+
+
+
+
+def update_yaml_file(yaml_file_path, update_value):
+    with open(yaml_file_path, "r") as yaml_file:
+        yaml = YAML()
+        data = yaml.load(yaml_file)
+        
+    # mqtt config
+    if "mqtt" not in data.keys():
+        data["mqtt"] = update_value["mqtt"]
+    else:
+        for key in update_value["mqtt"].keys():
+            for i, button in enumerate(update_value["mqtt"][key]):
+                if len([i for i in update_value["mqtt"][key] if i["unique_id"] == button["unique_id"]]) == 1:
+                    if key not in data["mqtt"].keys():
+                        data["mqtt"][key] = []
+                    index_map = [i for i, s in enumerate(data["mqtt"][key]) if s["unique_id"] == button["unique_id"]]
+                    if len(index_map) == 0:
+                        data["mqtt"][key].append(button)
+                    else:
+                        data["mqtt"][key][index_map[0]] = button
+    # camera config
+    if "camera" not in data.keys():
+        data["camera"] = update_value["camera"]
+    else:
+        for i, button in enumerate(update_value["camera"]):
+            if len([i for i in update_value["camera"] if i["name"] == button["name"]]) == 1:
+                index_map = [i for i, s in enumerate(data["camera"]) if s["name"] == button["name"]]
+                if len(index_map) == 0:
+                    data["camera"].append(button)
+                else:
+                    data["camera"][index_map[0]] = button
+
+    # Write the updated data back to the YAML file
+    with open(yaml_file_path, "w") as yaml_file:
+        yaml.dump(data, yaml_file)
+
+
+# Auto create tapo entities in configuration.yaml - if they are not existing, they will get created. If the are existing, they will get updated. mqtt entries get identified based on the unique_id and the camera based on the name
+update_yaml_file('/config/configuration.yaml', {
+    "mqtt": {
+        "button": [
+            { "unique_id": "tapo-cam_up", "name": "Tapo Cam - Move up", "command_topic": "tapo-cam/move/up", "payload_press": "10" },
+            { "unique_id": "tapo-cam_down", "name": "Tapo Cam - Move down", "command_topic": "tapo-cam/move/down", "payload_press": "10" },
+            { "unique_id": "tapo-cam_left", "name": "Tapo Cam - Move left", "command_topic": "tapo-cam/move/left", "payload_press": "10" },
+            { "unique_id": "tapo-cam_right", "name": "Tapo Cam - Move right", "command_topic": "tapo-cam/move/right", "payload_press": "10" },
+        ],
+        "switch": [
+            { "unique_id": "tapo-cam_privacy_switch", "name": "Tapo Cam - Privacy Switch", "state_topic": "tapo-cam/privacy", "command_topic": "tapo-cam/privacy/set", "payload_on": "ON", "payload_off": "OFF", "state_on": "ON", "state_off": "OFF" },
+        ]
+    },
+    "camera": [{
+        "platform": "ffmpeg",
+        "name": "Tapo-C200",
+        "input": f'-rtsp_transport tcp -i rtsp://{hass_options["username"]}:{hass_options["password"]}@{hass_options["ip"]}:554/stream1'
+    }]
+})
+
+
+
+
+
+
+
+
+
+
+
 
 #log(yaml.safe_load(open('/config/configuration.yaml')))
 
