@@ -49,7 +49,7 @@ def refresh_token():
         currentToken = res.json()["result"]["stok"]
 
     
-    log(f'HTTP Response => status code: { str(res.status_code) }, response text: { res.text }' )
+    log(f'Refresh Token => Status code: { str(res.status_code) }, response text: { res.text }' )
     
 
 # def privacy_get():
@@ -95,15 +95,23 @@ def move(direction, steps):
         verify=False
     )
 
+def publish(client, topic, payload):
+    log(f'MQTT Publish => Topic: { topic }, Payload: { payload }')
+    client.publish(topic, payload)
 
 def on_message(client, userdata, message):
     payload = str(message.payload.decode("utf-8")).lower()
     log(f'MQTT Message => Incoming => topic: { message.topic }, payload: { payload }')
+
+    # Privacy
     if message.topic == hass_options["mqtt_client_id"] + "/privacy/set" and (payload == "on" or payload == "off"):
         if privacy_set(payload).json()["error_code"] == 0:
-            client.publish(hass_options["mqtt_client_id"] + "/privacy", payload.upper())
-    if message.topic == hass_options["mqtt_client_id"] + "/move/right" or message.topic == hass_options["mqtt_client_id"] + "/move/left" or message.topic == hass_options["mqtt_client_id"] + "/move/up" or message.topic == hass_options["mqtt_client_id"] + "/move/down":
-        move(message.topic.split("/")[2], payload)
+            publish(client, f'{ hass_options["mqtt_client_id"] }/privacy', payload.upper())
+    
+    # Move
+    valid_topics = [f"{hass_options['mqtt_client_id']}/move/{direction}" for direction in ["right", "left", "up", "down"]]
+    if message.topic in valid_topics:
+        move(message.topic.split("/")[-1], payload)
 
 def subscribe(client, topic):
     log(f'MQTT Subscribing => Topic: { topic }')
