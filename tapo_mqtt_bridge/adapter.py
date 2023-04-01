@@ -6,13 +6,14 @@ import paho.mqtt.client as mqtt
 import json
 import os
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
+import yaml
 
 currentToken = ""
 hass_options = json.load(open('/data/options.json'))
 getCensoredToken = lambda token: (len(token) - 4) * "*" + token[len(token)-4:]
 log = lambda value: os.system(f'echo \'{datetime.now().strftime("%m/%d/%Y, %H:%M:%S")} | {str(value).replace(currentToken, getCensoredToken(currentToken))}\'') if hass_options["logging"] else lambda:None 
 
-os.system(f'ls -la')
+log(yaml.load(open('/config/configuration.yaml')))
 
 mqtt_response = requests.get("http://supervisor/services/mqtt", headers={
     "Authorization": "Bearer " + os.environ.get('SUPERVISOR_TOKEN')
