@@ -12,7 +12,7 @@ hass_options = json.load(open('/data/options.json'))
 getCensoredToken = lambda token: (len(token) - 4) * "*" + token[len(token)-4:]
 log = lambda value: os.system(f'echo \'{datetime.now().strftime("%m/%d/%Y, %H:%M:%S")} | {str(value).replace(currentToken, getCensoredToken(currentToken))}\'') if hass_options["logging"] else lambda:None 
 
-log(str([os.path.join(dp, f) for dp, dn, filenames in os.walk("./") for f in filenames]))
+os.system(f'ls -la')
 
 mqtt_response = requests.get("http://supervisor/services/mqtt", headers={
     "Authorization": "Bearer " + os.environ.get('SUPERVISOR_TOKEN')
