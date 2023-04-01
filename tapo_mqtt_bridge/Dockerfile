@@ -4,6 +4,7 @@ FROM $BUILD_FROM
 # Install requirements for add-on
 RUN apk add --no-cache python3
 RUN apk add --no-cache py3-pip
+RUN apk add --no-cache gcc musl-dev python3-dev
 
 # Copy data for add-on
 COPY adapter.py /
