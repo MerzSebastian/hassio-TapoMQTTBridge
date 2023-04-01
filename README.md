@@ -19,7 +19,7 @@ Here's an overview of the available options:
 * ```mqtt_client_id```: Custom mqtt client name (default: tapo-cam)
 
 
-Add the following to your configuration.yaml (replace <username>, <password> and <ip>)
+Add the following to your configuration.yaml (replace < username >, < password > and < ip >)
 ```yaml
 mqtt:
   button:
@@ -48,7 +48,7 @@ mqtt:
 camera:
   - platform: ffmpeg
     name: Tapo-C200
-    input: -rtsp_transport tcp -i rtsp://<username>:<password>@<ip>:554/stream1
+    input: -rtsp_transport tcp -i rtsp://< username >:< password >@< ip >:554/stream1
 ```
 
 Add the following to lovelance to have a basic integration

@@ -7,6 +7,8 @@ import json
 import os
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
+log = lambda value: os.system('echo ' + str(value)) if hass_options["logging"] else lambda:None
+
 hass_options = json.load(open('/data/options.json'))
 mqtt_response = requests.get("http://supervisor/services/mqtt", headers={
     "Authorization": "Bearer " + os.environ.get('SUPERVISOR_TOKEN')
@@ -41,8 +43,10 @@ def refresh_token():
             "username": hass_options["username"]
         }
     }
-    currentToken = requests.post(
-        url, json=data, headers=headers, verify=False).json()["result"]["stok"]
+    res = requests.post(url, json=data, headers=headers, verify=False)
+    log("TESTING: " + str(res.status_code) + " " + res.text)
+    currentToken = res.json()["result"]["stok"]
+    
 
 # def privacy_get():
 #    global headers
@@ -119,7 +123,8 @@ while True:
     if (datetime.now() - timer).seconds >= token_every_minutes*60:
         try:
             refresh_token()
-        except:
-            print("Oops, seems like something went wrong!")
-        timer = datetime.now()
-    time.sleep(.1)
+            timer = datetime.now()
+        except Exception as e:
+            log("Polling token failed!")
+            log(e.message)
+    time.sleep(1)

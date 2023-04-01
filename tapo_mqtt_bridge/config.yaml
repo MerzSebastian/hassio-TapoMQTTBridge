@@ -12,12 +12,14 @@ arch:
 
 options:
   mqtt_client_id: tapo-cam
+  logging: true
 
 schema:
   ip: str
   username: str
   password: str
   mqtt_client_id: str
+  logging: bool
 
 hassio_api: true
 services: 
