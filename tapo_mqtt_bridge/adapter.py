@@ -7,7 +7,7 @@ import json
 import os
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
-log = lambda value: os.system('echo ' + str(value)) if hass_options["logging"] else lambda:None
+log = lambda value: os.system(f'echo \'{datetime.now().strftime("%m/%d/%Y, %H:%M:%S")}     LOGGER: {str(value)}\'') if hass_options["logging"] else lambda:None 
 
 hass_options = json.load(open('/data/options.json'))
 mqtt_response = requests.get("http://supervisor/services/mqtt", headers={
@@ -44,8 +44,9 @@ def refresh_token():
         }
     }
     res = requests.post(url, json=data, headers=headers, verify=False)
-    log("TESTING: " + str(res.status_code) + " " + res.text)
-    currentToken = res.json()["result"]["stok"]
+    log(f'HTTP Response => status code: { str(res.status_code) }, text: { res.text }' )
+    if res.status_code == 200:
+        currentToken = res.json()["result"]["stok"]
     
 
 # def privacy_get():
@@ -94,6 +95,7 @@ def move(direction, steps):
 
 def on_message(client, userdata, message):
     payload = str(message.payload.decode("utf-8")).lower()
+    log(f'MQTT Message => Incoming => topic: { message.topic }, payload: { payload }')
     if message.topic == hass_options["mqtt_client_id"] + "/privacy/set" and (payload == "on" or payload == "off"):
         if privacy_set(payload).json()["error_code"] == 0:
             client.publish(hass_options["mqtt_client_id"] + "/privacy", payload.upper())
@@ -115,7 +117,7 @@ client.on_message = on_message
 client.on_connect = on_connect
 client.connect(mqtt_response["host"], mqtt_response["port"], 60)
 
-token_every_minutes = 30
+token_every_minutes = 1
 timer = datetime.now() + timedelta(minutes=token_every_minutes)
 
 client.loop_start()

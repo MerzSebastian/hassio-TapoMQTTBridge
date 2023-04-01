@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.5] - 2023-04-01
+
+### Changed
+
+- get token every minute instead of 30 minutes for testing.
+- improved logging
+
 ## [1.0.4] - 2023-04-01
 
 ### Added
