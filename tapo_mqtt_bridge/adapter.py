@@ -7,7 +7,8 @@ import json
 import os
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
-log = lambda value: os.system(f'echo \'{datetime.now().strftime("%m/%d/%Y, %H:%M:%S")}     LOGGER: {str(value)}\'') if hass_options["logging"] else lambda:None 
+getCensoredToken = lambda token: (len(token) - 4) * "*" + token[len(token)-4:]
+log = lambda value: os.system(f'echo \'{datetime.now().strftime("%m/%d/%Y, %H:%M:%S")} | {str(value).replace(currentToken, getCensoredToken(currentToken))}\'') if hass_options["logging"] else lambda:None 
 
 hass_options = json.load(open('/data/options.json'))
 mqtt_response = requests.get("http://supervisor/services/mqtt", headers={
@@ -44,9 +45,9 @@ def refresh_token():
         }
     }
     res = requests.post(url, json=data, headers=headers, verify=False)
-    log(f'HTTP Response => status code: { str(res.status_code) }, text: { res.text }' )
     if res.status_code == 200:
         currentToken = res.json()["result"]["stok"]
+    log(f'HTTP Response => status code: { str(res.status_code) }, response text: { res.text }' )
     
 
 # def privacy_get():
@@ -102,13 +103,16 @@ def on_message(client, userdata, message):
     if message.topic == hass_options["mqtt_client_id"] + "/move/right" or message.topic == hass_options["mqtt_client_id"] + "/move/left" or message.topic == hass_options["mqtt_client_id"] + "/move/up" or message.topic == hass_options["mqtt_client_id"] + "/move/down":
         move(message.topic.split("/")[2], payload)
 
+def subscribe(client, topic):
+    log(f'MQTT Subscribing => Topic: { topic }')
+    client.subscribe(topic)
 
 def on_connect(client, userdata, flags, rc):
-    client.subscribe(hass_options["mqtt_client_id"] + "/move/right")
-    client.subscribe(hass_options["mqtt_client_id"] + "/move/left")
-    client.subscribe(hass_options["mqtt_client_id"] + "/move/up")
-    client.subscribe(hass_options["mqtt_client_id"] + "/move/down")
-    client.subscribe(hass_options["mqtt_client_id"] + "/privacy/set")
+    subscribe(client, f'{ hass_options["mqtt_client_id"] }/move/right')
+    subscribe(client, f'{ hass_options["mqtt_client_id"] }/move/left')
+    subscribe(client, f'{ hass_options["mqtt_client_id"] }/move/up')
+    subscribe(client, f'{ hass_options["mqtt_client_id"] }/move/down')
+    subscribe(client, f'{ hass_options["mqtt_client_id"] }/privacy/set')
 
 
 client = mqtt.Client(client_id=hass_options["mqtt_client_id"])
@@ -117,7 +121,7 @@ client.on_message = on_message
 client.on_connect = on_connect
 client.connect(mqtt_response["host"], mqtt_response["port"], 60)
 
-token_every_minutes = 1
+token_every_minutes = hass_options["refresh_token_polling_interval_minutes"]
 timer = datetime.now() + timedelta(minutes=token_every_minutes)
 
 client.loop_start()
