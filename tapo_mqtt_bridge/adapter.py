@@ -30,6 +30,7 @@ def update_yaml_file(yaml_file_path, update_value):
     with open(yaml_file_path, "r") as yaml_file:
         yaml = YAML()
         data = yaml.load(yaml_file)
+        initial_data = data
         
     # mqtt config
     if "mqtt" not in data.keys():
@@ -60,10 +61,12 @@ def update_yaml_file(yaml_file_path, update_value):
     # Write the updated data back to the YAML file
     with open(yaml_file_path, "w") as yaml_file:
         yaml.dump(data, yaml_file)
+    
+    return initial_data != data
 
 
 # Auto create tapo entities in configuration.yaml - if they are not existing, they will get created. If the are existing, they will get updated. mqtt entries get identified based on the unique_id and the camera based on the name
-update_yaml_file('/config/configuration.yaml', {
+changes = update_yaml_file('/config/configuration.yaml', {
     "mqtt": {
         "button": [
             { "unique_id": "tapo-cam_up", "name": "Tapo Cam - Move up", "command_topic": "tapo-cam/move/up", "payload_press": "10" },
@@ -81,11 +84,13 @@ update_yaml_file('/config/configuration.yaml', {
         "input": f'-rtsp_transport tcp -i rtsp://{hass_options["username"]}:{hass_options["password"]}@{hass_options["ip"]}:554/stream1'
     }]
 })
+
 # Restart hass core (a bit shitty but works for now)
-res = requests.POST("http://supervisor/core/restart", headers={
-    "Authorization": "Bearer " + os.environ.get('SUPERVISOR_TOKEN')
-})
-log("RESTART CORE " + res.text)
+if changes:
+    res = requests.post("http://supervisor/core/restart", headers={
+        "Authorization": "Bearer " + os.environ.get('SUPERVISOR_TOKEN')
+    })
+    log("RESTART CORE " + res.text)
 
 
 
