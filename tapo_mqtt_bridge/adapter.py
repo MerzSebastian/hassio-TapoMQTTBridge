@@ -86,7 +86,7 @@ changes = update_yaml_file('/config/configuration.yaml', {
 })
 
 # Restart hass core (a bit shitty but works for now)
-if changes:
+if changes or True:
     res = requests.post("http://supervisor/core/restart", headers={
         "Authorization": "Bearer " + os.environ.get('SUPERVISOR_TOKEN')
     })
