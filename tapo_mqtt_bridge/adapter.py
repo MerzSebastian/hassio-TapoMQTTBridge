@@ -85,7 +85,8 @@ changes = update_yaml_file('/config/configuration.yaml', {
     }]
 })
 
-# Restart hass core (a bit shitty but works for now)
+# Restart hass core (a bit shitty but works for now) BE CAREFUL SO THAT NO BOOTLOOP IS CREATED !!
+os.system("printenv")
 if changes or True:
     res = requests.post("http://supervisor/core/restart", headers={
         "Authorization": "Bearer " + os.environ.get('SUPERVISOR_TOKEN')
