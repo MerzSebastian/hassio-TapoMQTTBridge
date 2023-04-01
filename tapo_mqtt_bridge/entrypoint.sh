@@ -1,2 +1,2 @@
-#!/usr/bin/with-contenv bashio
+#!/usr/bin/with-contenv bash
 python3 ./adapter.py
