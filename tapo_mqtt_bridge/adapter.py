@@ -23,7 +23,8 @@ log = lambda value: os.system(f'echo \'{datetime.now().strftime("%m/%d/%Y, %H:%M
 
 
 config_update_data = YAML().load(open('/config_update.yaml'))
-print(config_update_data)
+log(str(config_update_data))
+log(type(config_update_data))
 
 
 # def update_yaml_file(yaml_file_path, update_value):
