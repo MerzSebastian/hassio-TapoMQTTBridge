@@ -10,9 +10,11 @@ RUN apk add --no-cache gcc musl-dev python3-dev
 COPY adapter.py /
 COPY requirements.txt /
 COPY entrypoint.sh /
+COPY config_update.yaml /
 RUN chmod a+x /adapter.py
 RUN chmod a+x /requirements.txt
 RUN chmod a+x /entrypoint.sh
+RUN chmod a+x /config_update.yaml
 
 # Install requirements
 RUN pip3 install -r requirements.txt
