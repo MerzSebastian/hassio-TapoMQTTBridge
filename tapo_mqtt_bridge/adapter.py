@@ -38,7 +38,7 @@ headers = {
 }
 
 
-def register_mqtt_device():
+def register_mqtt_device(client):
     f = open('device.json')
     data = json.load(f)
     f.close()
@@ -74,7 +74,6 @@ def register_mqtt_device():
                 "device": device_data,
             }))
 
-register_mqtt_device()
 
 def refresh_token():
     global headers
@@ -179,6 +178,11 @@ token_every_minutes = hass_options["refresh_token_polling_interval_minutes"]
 timer = datetime.now() + timedelta(minutes=token_every_minutes)
 
 client.loop_start()
+
+
+register_mqtt_device(client)
+
+
 while True:
     if (datetime.now() - timer).seconds >= token_every_minutes*60:
         try:
