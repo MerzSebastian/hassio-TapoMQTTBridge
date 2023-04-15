@@ -1,7 +1,11 @@
 ## Home Assistant Addon: Tapo MQTT Bridge
 
+WIP: CURRENTLY NOT WORKING!
+
 # Installation
+
 To install this add-on, follow these steps:
+
 1. Open the Home Assistant web interface
 2. Click on the Supervisor tab
 3. Click on Add-on Store
@@ -11,15 +15,17 @@ To install this add-on, follow these steps:
 7. Click on the "Install" button
 
 # Configuration
+
 The add-on can be configured using the config tab.
 Here's an overview of the available options:
-* ```ip```: The ip of the tapo c200 cam
-* ```username```: The username for the tapo c200 cam
-* ```password```: The password for the tapo c200 cam
-* ```mqtt_client_id```: Custom mqtt client name (default: tapo-cam)
 
+- `ip`: The ip of the tapo c200 cam
+- `username`: The username for the tapo c200 cam
+- `password`: The password for the tapo c200 cam
+- `mqtt_client_id`: Custom mqtt client name (default: tapo-cam)
 
 Add the following to your configuration.yaml (replace < username >, < password > and < ip >)
+
 ```yaml
 mqtt:
   button:
@@ -55,6 +61,7 @@ camera:
 ```
 
 Add the following to lovelance to have a basic integration
+
 ```yaml
 type: vertical-stack
 cards:
@@ -120,13 +127,17 @@ cards:
         icon: mdi:arrow-right-bold
         icon_height: 22px
 ```
+
 # Usage
+
 If you followed the setup steps correctly you now should have a lovelance element which can controll your tapo-c200 cam
 
 ![](https://github.com/MerzSebastian/hassio-TapoMQTTBridge/blob/main/sample.PNG)
 
 # Credits
+
 This add-on was created by Sebastian Merz.
 
 # Support
+
 If you have any issues or feature requests, please open an issue on the GitHub repository.

@@ -2,36 +2,36 @@
     "mqtt": {
       "button": [
         {
-          "unique_id": "tapo-cam_up",
-          "name": "Tapo Cam - Move up",
-          "command_topic": "tapo-cam/move/up",
+          "unique_id": "move_up",
+          "name": "Move up",
+          "command_topic": "move/up",
           "payload_press": "10"
         },
         {
-          "unique_id": "tapo-cam_down",
-          "name": "Tapo Cam - Move down",
-          "command_topic": "tapo-cam/move/down",
+          "unique_id": "move_down",
+          "name": "Move down",
+          "command_topic": "move/down",
           "payload_press": "10"
         },
         {
-          "unique_id": "tapo-cam_left",
-          "name": "Tapo Cam - Move left",
-          "command_topic": "tapo-cam/move/left",
+          "unique_id": "move_left",
+          "name": "Move left",
+          "command_topic": "move/left",
           "payload_press": "10"
         },
         {
-          "unique_id": "tapo-cam_right",
-          "name": "Tapo Cam - Move right",
-          "command_topic": "tapo-cam/move/right",
+          "unique_id": "move_right",
+          "name": "Move right",
+          "command_topic": "move/right",
           "payload_press": "10"
         }
       ],
       "switch": [
         {
-          "unique_id": "tapo-cam_privacy_switch",
-          "name": "Tapo Cam - Privacy Switch",
-          "state_topic": "tapo-cam/privacy",
-          "command_topic": "tapo-cam/privacy/set",
+          "unique_id": "privacy_switch",
+          "name": "Privacy Switch",
+          "state_topic": "privacy",
+          "command_topic": "privacy/set",
           "payload_on": "ON",
           "payload_off": "OFF",
           "state_on": "ON",
