@@ -21,9 +21,9 @@ schema:
       ip: string
       username: str
       password: password
-  ip: str
-  username: str
-  password: str
+  # ip: str
+  # username: str
+  # password: str
   mqtt_client_id: str
   logging: bool
   refresh_token_polling_interval_minutes: int
