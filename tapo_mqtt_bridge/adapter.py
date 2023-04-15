@@ -8,90 +8,20 @@ import os
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 import sys
 import subprocess
-from ruamel.yaml import YAML, representer
-from ruamel.yaml.compat import StringIO
-representer.RoundTripRepresenter.ignore_aliases = lambda x, y: True
+import uuid
 
 currentToken = ""
-hass_options = json.load(open('/data/options.json'))
+f = open('/data/options.json')
+hass_options = json.load(f)
+f.close()
 censorString = lambda token: (len(token) - 4) * "*" + token[len(token)-4:]
 log = lambda value: subprocess.run(f'echo "{datetime.now().strftime("%m/%d/%Y, %H:%M:%S")} | {str(value).replace(currentToken, censorString(currentToken)).replace(hass_options["password"], censorString(hass_options["password"]))}"', shell=True) if hass_options["logging"] else lambda: None
 
-
-# def update_yaml_file(yaml_file_path, update_value):
-#     with open(yaml_file_path, "r") as yaml_file:
-#         data = yaml.load(yaml_file)
-#         initial_data = str(data)
-
-#     # mqtt config
-#     if "mqtt" not in data.keys():
-#         data["mqtt"] = update_value["mqtt"]
-#     else:
-#         for key in update_value["mqtt"].keys():
-#             for i, button in enumerate(update_value["mqtt"][key]):
-#                 if len([i for i in update_value["mqtt"][key] if i["unique_id"] == button["unique_id"]]) == 1:
-#                     if key not in data["mqtt"].keys():
-#                         data["mqtt"][key] = []
-#                     index_map = [i for i, s in enumerate(data["mqtt"][key]) if s["unique_id"] == button["unique_id"]]
-#                     if len(index_map) == 0:
-#                         data["mqtt"][key].append(button)
-#                     else:
-#                         data["mqtt"][key][index_map[0]] = button
-#     # camera config
-#     if "camera" not in data.keys():
-#         data["camera"] = update_value["camera"]
-#     else:
-#         for i, button in enumerate(update_value["camera"]):
-#             if len([i for i in update_value["camera"] if i["name"] == button["name"]]) == 1:
-#                 index_map = [i for i, s in enumerate(data["camera"]) if s["name"] == button["name"]]
-#                 if len(index_map) == 0:
-#                     data["camera"].append(button)
-#                 else:
-#                     data["camera"][index_map[0]] = button
-
-#     # Write the updated data back to the YAML file
-#     with open(yaml_file_path, "w") as yaml_file:
-#         yaml.dump(data, yaml_file)
-
-#     return initial_data != str(data)
-
-# # would be good to make a backup for the config
-# log("Configuration editor | Checking if configuration.yaml needs update...")
-# yaml = YAML()
-# yaml.preserve_quotes = True
-# update_value = yaml.load(open('/config_update.yaml'))
-
-# # replace placeholder in update_Value
-# update_value["camera"][0]["input"] = update_value["camera"][0]["input"].replace("<username>", hass_options["username"]).replace("<password>", hass_options["password"]).replace("<ip>", hass_options["ip"])
-# log("Configuration editor | Checking for configuration.yaml updates and applying them if needed")
-# changes = update_yaml_file('/config/configuration.yaml', update_value)
-# log("Configuration editor | Where there any updates?: " + str(changes))
-# if changes:
-#     log("Configuration editor | Update finished! Restarting Home Assistant")
-#     # Restart hass core (a bit shitty 'should' work for now), would be nice if i can only reload json somehow. Prob. possible. getting a 403 anyways
-#     res = requests.post("http://supervisor/core/restart", headers={
-#         "Authorization": "Bearer " + os.environ.get('SUPERVISOR_TOKEN')
-#     })
-#     if res.status_code != 200:
-#         log("Configuration editor | ERROR => Reloading configuration.yaml resulted in the following response: " + res.text)
-#     else:
-#         log("Configuration editor | Good bye!")
-
-
-
-
-
-
-
-
-
-
-#log(yaml.safe_load(open('/config/configuration.yaml')))
-
-# if threse is not mosquito installed or mqtt service available, this will throw an error, maybe use something descriptive to log here instead
-mqtt_response = requests.get("http://supervisor/services/mqtt", headers={
-    "Authorization": "Bearer " + os.environ.get('SUPERVISOR_TOKEN')
-}).json()["data"]
+mqtt_response = requests.get("http://supervisor/services/mqtt", headers={ "Authorization": "Bearer " + os.environ.get('SUPERVISOR_TOKEN') }).json()
+if "data" not in mqtt_response.keys():
+    sys.exit(datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + ' | FATAL ERROR | Seems like no mqtt service could be found. Are you sure you installed Mosquitto?')
+else:
+    mqtt_response = mqtt_response["data"]
 
 mqtt_username = mqtt_response["username"]
 mqtt_password = mqtt_response["password"]
@@ -107,6 +37,44 @@ headers = {
     "Content-Type": "application/json; charset=UTF-8",
 }
 
+
+def register_mqtt_device():
+    f = open('device.json')
+    data = json.load(f)
+    f.close()
+    for cam in hass_options['cams']:
+        device_data = {
+            "identifiers": [str(uuid.uuid4())],
+            "name": "TP-Link Tapo C200 WiFi Security Camera",
+            "model": "Tapo C200",
+            "manufacturer": "TP-Link"
+        }
+        for btn in data["mqtt"]["button"]:
+            unique_id = f'{cam["unique_id"]}_{btn["unique_id"]}'
+            client.publish(f'homeassistant/button/{unique_id}/config', json.dumps({
+                "name": btn["name"],
+                "object_id": unique_id,
+                "unique_id": unique_id,
+                "command_topic": f'{cam["unique_id"]}/{btn["command_topic"]}',
+                "payload_press": f'{cam["unique_id"]}/{btn["payload_press"]}',
+                "device": device_data,
+            }))
+        for switch in data["mqtt"]["switch"]:
+            unique_id = f'{cam["unique_id"]}_{btn["unique_id"]}'
+            client.publish(f'homeassistant/switch/{unique_id}/config', json.dumps({
+                "name": switch["name"],
+                "object_id": unique_id,
+                "unique_id": unique_id,
+                "command_topic": f'{cam["unique_id"]}/{switch["command_topic"]}',
+                "state_topic": f'{cam["unique_id"]}/{switch["state_topic"]}',
+                "payload_on": "ON",
+                "payload_off": "OFF",
+                "state_on": "ON",
+                "state_off": "OFF"
+                "device": device_data,
+            }))
+
+register_mqtt_device()
 
 def refresh_token():
     global headers

@@ -9,14 +9,12 @@ RUN apk add --no-cache gcc musl-dev python3-dev
 # Copy data for add-on
 COPY adapter.py /
 COPY requirements.txt /
-COPY entrypoint.sh /
-COPY config_update.yaml /
+COPY device.json /
 RUN chmod a+x /adapter.py
 RUN chmod a+x /requirements.txt
-RUN chmod a+x /entrypoint.sh
-RUN chmod a+x /config_update.yaml
+RUN chmod a+x /device.json
 
 # Install requirements
 RUN pip3 install -r requirements.txt
 
-CMD [ "/entrypoint.sh" ]
+CMD ["/usr/bin/with-contenv", "exec", "python3", "adapter.py"]
