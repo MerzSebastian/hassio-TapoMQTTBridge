@@ -44,7 +44,7 @@ def register_mqtt_device(client):
     f.close()
     for cam in hass_options['cams']:
         device_data = {
-            "identifiers": [str(uuid.uuid4())],
+            "identifiers": [cam["unique_id"]],
             "name": "TP-Link Tapo C200 WiFi Security Camera",
             "model": "Tapo C200",
             "manufacturer": "TP-Link"
@@ -161,6 +161,7 @@ def subscribe(client, topic):
     client.subscribe(topic)
 
 def on_connect(client, userdata, flags, rc):
+    register_mqtt_device(client)
     subscribe(client, f'{ hass_options["mqtt_client_id"] }/move/right')
     subscribe(client, f'{ hass_options["mqtt_client_id"] }/move/left')
     subscribe(client, f'{ hass_options["mqtt_client_id"] }/move/up')
@@ -180,7 +181,6 @@ timer = datetime.now() + timedelta(minutes=token_every_minutes)
 client.loop_start()
 
 
-register_mqtt_device(client)
 
 
 while True:
