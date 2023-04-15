@@ -25,9 +25,9 @@ else:
 
 mqtt_username = mqtt_response["username"]
 mqtt_password = mqtt_response["password"]
-url = "https://" + hass_options["ip"] + ":443"
+url = "https://" #+ hass_options["ip"] + ":443"
 headers = {
-    "Host": hass_options["ip"],
+    #"Host": hass_options["ip"],
     "Referer": url,
     "Accept": "application/json",
     "Accept-Encoding": "gzip, deflate",
