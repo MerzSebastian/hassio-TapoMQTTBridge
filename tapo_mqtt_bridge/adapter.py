@@ -70,7 +70,7 @@ def register_mqtt_device():
                 "payload_on": "ON",
                 "payload_off": "OFF",
                 "state_on": "ON",
-                "state_off": "OFF"
+                "state_off": "OFF",
                 "device": device_data,
             }))
 
